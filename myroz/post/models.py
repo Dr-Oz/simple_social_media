@@ -16,6 +16,11 @@ class Post(models.Model):
     )
     group = models.ForeignKey('Group', on_delete=models.PROTECT, blank=True, null=True)
 
+    def __str__(self):
+        # выводим текст поста
+        return self.text
+
+
 class Group(models.Model):
     name = models.CharField(max_length=255, verbose_name="Название")
     slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")

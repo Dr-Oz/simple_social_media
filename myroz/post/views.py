@@ -1,17 +1,22 @@
+import datetime
 
 # Create your views here.
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
-from .models import Post, Group
+from .models import Post, Group, User
 
 
 # Create your views here.
 def index(request):
+    author = User.objects.get(username='leo')
+    keyword = "утро"
+    start_date = datetime.date(1854, 7, 7)
+    end_date = datetime.date(1854, 7, 21)
+    posts = Post.objects.filter(text__contains=keyword).filter(author=author).filter(pub_date__range=(start_date, end_date))
     # Одна строка вместо тысячи слов на SQL:
     # в переменную posts будет сохранена выборка из 10 объектов модели Post,
     # отсортированных по полю pub_date по убыванию (от больших значений к меньшим)
-    posts = Post.objects.order_by('-pub_date')[:10]
     # В словаре context отправляем информацию в шаблон
     context = {
         'posts': posts,

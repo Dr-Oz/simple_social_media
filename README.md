@@ -1,2 +1,1 @@
-# simple_social_media
-Social nerwork for bloggers
+# backend_community_homework

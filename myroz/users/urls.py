@@ -1,5 +1,5 @@
 
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth.views import LogoutView, LoginView, PasswordChangeView, PasswordResetView, PasswordChangeDoneView
 from django.urls import path
 from . import views
 
@@ -16,6 +16,11 @@ urlpatterns = [
     ),
     # Полный адрес страницы регистрации - auth/signup/,
     # но префикс auth/ обрабатывется в головном urls.py
-    path('signup/', views.SignUp.as_view(), name='signup')
+    path('signup/', views.SignUp.as_view(), name='signup'),
+    path('logout', LogoutView.as_view(), name='users/logged_out.html'),
+    path('login/', LoginView.as_view(template_name='users/login.html'), name='login'),
+    path('password_change/', PasswordChangeView.as_view(template_name='users/password_change_form.html')),
+    path('password_change/done/', PasswordChangeDoneView.as_view(template_name='users/password_change_done.html')),
+    path('password_reset/', PasswordResetView.as_view(template_name='users/password_reset_form.html'), name='password_reset_form')
 ]
 

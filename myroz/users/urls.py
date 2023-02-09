@@ -20,16 +20,16 @@ urlpatterns = [
     path('password_change/', PasswordChangeView.as_view(template_name='users/password_change_form.html'), name='password_change'),
 
     # Сообщение об успешном изменении пароля
-    path('password_change/done/', PasswordChangeDoneView.as_view(), name='password_change_done'),
+    path('password_change/done/', PasswordChangeDoneView.as_view(template_name='users/password_change_done.html'), name='password_change_done'),
 
     # Восстановление пароля
-    path('password_reset/', PasswordResetView.as_view(template_name='users/password_reset_form.html'), name='password_reset_form'),
+    path('password_reset/', PasswordResetView.as_view(template_name='users/password_reset_form.html'), name='password_reset'),
 
     # Сообщение об отправке ссылки для восстановления пароля
-    path('password_reset/done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('password_reset/done/', PasswordResetDoneView.as_view(template_name='users/password_reset_done.html'), name='password_reset_done'),
 
     # Вход по ссылке для восстановления пароля
-    path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(template_name='users/password_reset_confirm.html'), name='password_reset_confirm'),
 
     # Сообщение об успешном восстановлении пароля
     path('reset/done/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'post',
     'users.apps.UsersConfig',
     'core.apps.CoreConfig',
+    'about.apps.AboutConfig',
 
 ]
 

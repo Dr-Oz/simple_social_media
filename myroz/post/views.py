@@ -56,3 +56,30 @@ def group_posts(request, slug):
     }
     return render(request, 'post/group_list.html', context)
 
+def profile(request, username):
+    # Здесь код запроса к модели и создание словаря контекста
+    user = User.objects.get(username=username)
+    post_user = Post.objects.filter(author=user).order_by('-pub_date')
+    post_one = Post.objects.filter(author=user).order_by('-pub_date')[:1]
+    paginator = Paginator(post_user, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'username': username,
+        'page_obj': page_obj,
+        'post_user': post_user,
+        'post_one': post_one,
+    }
+    return render(request, 'post/profile.html', context)
+
+
+def post_detail(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    user = post.author
+    post_user = Post.objects.filter(author=user).order_by('-pub_date')
+    context = {
+        'post': post,
+        'post_user': post_user
+    }
+    return render(request, 'post/post_detail.html', context)

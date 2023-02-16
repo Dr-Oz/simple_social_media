@@ -1,11 +1,14 @@
 import datetime
 
+from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-
+from django.shortcuts import render, redirect
+from .forms import PostForm
 from .models import Post, Group, User
+from django.urls import reverse
 
 
 # Create your views here.
@@ -15,7 +18,7 @@ def index(request):
     # запрос будет выглядить так:
     # post_list = Post.objects.all()
     # Показывать по 10 записей на странице.
-    paginator = Paginator(post_list, 10)
+    paginator = Paginator(post_list, 3)
 
     # Из URL извлекаем номер запрошенной страницы - это значение параметра page
     page_number = request.GET.get('page')
@@ -83,3 +86,24 @@ def post_detail(request, post_id):
         'post_user': post_user
     }
     return render(request, 'post/post_detail.html', context)
+
+def post_create(request):
+
+    if request.method == 'POST':
+        id = request.user.id
+        author_id = User.objects.get(id=id)
+        username = request.user.username
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = author_id
+            post.save()
+            return redirect('post_app:profile', username)
+
+    form = PostForm()
+    context = {
+        "form": form,
+    }
+    return render(request, 'post/create_post.html', context)
+
+

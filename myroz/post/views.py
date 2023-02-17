@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
@@ -87,6 +88,7 @@ def post_detail(request, post_id):
     }
     return render(request, 'post/post_detail.html', context)
 
+@login_required
 def post_create(request):
 
     if request.method == 'POST':
@@ -106,4 +108,13 @@ def post_create(request):
     }
     return render(request, 'post/create_post.html', context)
 
+def post_edit(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        form = PostForm(request.POST, instance=post)
+        if form.is_valid():
+            form.save()
+        return redirect('post_app:post_detail', post_id=post.id)
 
+    form = PostForm(instance=post)
+    return render(request, 'post/create_post.html', {'form': form, 'post': post})

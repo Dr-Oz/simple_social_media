@@ -1,9 +1,7 @@
-
 {% extends "base.html" %}
-{% block title %}Myroz{% endblock %}
+{% block title %}Последние обновления на сайте{% endblock %}
 {% block content %}
       <div class="container py-5">
-        <h1>Последние обновления на сайте</h1>
         <article>
          {% for post in page_obj %}
           <ul>
@@ -24,5 +22,4 @@
         <!-- под последним постом нет линии -->
       </div>
       {% include 'post/includes/paginator.html' %}
-    </main>
 {% endblock %}

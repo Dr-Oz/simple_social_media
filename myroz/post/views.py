@@ -32,16 +32,6 @@ def index(request):
     }
     return render(request, 'post/index.html', context)
 
-
-def groups(request):
-    template = 'post/group_list.html'
-    text = 'Здесь будет информация о группах проекта Myroz'
-    context = {
-        'text': text
-    }
-    return render(request, template, context)
-
-
 # View-функция для страницы сообщества:
 def group_posts(request, slug):
     # Функция get_object_or_404 получает по заданным критериям объект
@@ -54,9 +44,12 @@ def group_posts(request, slug):
     # Это аналог добавления
     # условия WHERE group_id = {group_id}
     posts = Post.objects.filter(group=group).order_by('-pub_date')[:10]
+    paginator = Paginator(posts, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         'group': group,
-        'posts': posts,
+        'page_obj': page_obj,
     }
     return render(request, 'post/group_list.html', context)
 

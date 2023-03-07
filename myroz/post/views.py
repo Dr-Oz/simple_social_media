@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import render, redirect
-from .forms import PostForm
+from .forms import PostForm, CommentForm
 from .models import Post, Group, User
 from django.urls import reverse
 
@@ -32,6 +32,7 @@ def index(request):
     }
     return render(request, 'post/index.html', context)
 
+
 # View-функция для страницы сообщества:
 def group_posts(request, slug):
     # Функция get_object_or_404 получает по заданным критериям объект
@@ -52,6 +53,7 @@ def group_posts(request, slug):
         'page_obj': page_obj,
     }
     return render(request, 'post/group_list.html', context)
+
 
 def profile(request, username):
     # Здесь код запроса к модели и создание словаря контекста
@@ -81,9 +83,9 @@ def post_detail(request, post_id):
     }
     return render(request, 'post/post_detail.html', context)
 
+
 @login_required
 def post_create(request):
-
     if request.method == 'POST':
         id = request.user.id
         author_id = User.objects.get(id=id)
@@ -101,13 +103,33 @@ def post_create(request):
     }
     return render(request, 'post/create_post.html', context)
 
+
 def post_edit(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.method == 'POST':
-        form = PostForm(request.POST, instance=post)
+        form = PostForm(
+            request.POST or None,
+            files=request.FILES or None,
+            instance=post
+        )
         if form.is_valid():
             form.save()
         return redirect('post_app:post_detail', post_id=post.id)
 
     form = PostForm(instance=post)
     return render(request, 'post/create_post.html', {'form': form, 'post': post})
+
+
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    form = CommentForm(request.POST or None)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+        return redirect('post_app:post_detail', post_id=post_id, form=form)
+    form = CommentForm()
+    context = {"form": form, 'post': post}
+    return render(request, 'post/post_detail.html', context)

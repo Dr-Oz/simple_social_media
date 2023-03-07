@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load thumbnail %}
 {% block title %}Профайл пользователя {{ username }}{% endblock %}
 {% block content %}
         <h1>Все посты пользователя {{ username }}</h1>
@@ -15,10 +16,13 @@
               Дата публикации: {{ post.pub_date|date:"d E Y" }}
             </li>
           </ul>
+                     {% thumbnail post.image "100x100" crop="center" upscale=True as im %}
+                <img class="card-img my-2" src="{{ im.url }}">
+             {% endthumbnail %}
             <p>
                 {{post.text}}
             </p>
-            <a href="<!-- -->">подробная информация </a>
+            <a href="{% url 'post_app:post_detail' post.id %}">подробная информация </a>
             {% endfor %}
         </article>
 

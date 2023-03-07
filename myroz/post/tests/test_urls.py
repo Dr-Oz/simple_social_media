@@ -47,4 +47,9 @@ class TaskURLTests(TestCase):
         response = self.guest_client.get('/post/post-id')
         self.assertEqual(response.status_code, 200)
 
+    def test_post_edit(self):
+        """Страница /post/<post_id>/edit доступна только автору."""
+        response = self.guest_client.get('/post/post-id/edit')
+        self.assertEqual(response.status_code, 200)
+
 

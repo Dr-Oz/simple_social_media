@@ -26,7 +26,7 @@
                 {% endfor %}
               {% endif %}
 
-                <form method="post" action={% if post %} "{% url 'post_app:post_edit' post_id=post.id %}"{% else %}"{% url 'post_app:post_create' %}"{% endif %}>
+                <form method="post" enctype="multipart/form-data" action={% if post %} "{% url 'post_app:post_edit' post_id=post.id %}"{% else %}"{% url 'post_app:post_create' %}"{% endif %}>
                   {% csrf_token %}
                   {# Выводим поля в цикле, по отдельности #}
                   {% for field in form %}

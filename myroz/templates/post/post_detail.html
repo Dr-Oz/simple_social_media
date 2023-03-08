@@ -9,7 +9,6 @@
             <li class="list-group-item">
               Дата публикации: {{ post.pub_date|date:"d E Y" }}
             </li>
-            <!-- если у поста есть группа -->
               <li class="list-group-item">
                 Группа: {{ post.group }}
                 {% if post.group %}
@@ -45,7 +44,7 @@
                       <form method="post" action="{% url 'post_app:add_comment' post.id %}">
                         {% csrf_token %}
                         <div class="form-group mb-2">
-                          {{ form.text|addclass:"form-control" }}
+                        {{ comment_form.text|addclass:"form-control"}}
                         </div>
                         <button type="submit" class="btn btn-primary">Отправить</button>
                       </form>

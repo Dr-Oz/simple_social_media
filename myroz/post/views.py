@@ -123,13 +123,21 @@ def post_edit(request, post_id):
 @login_required
 def add_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    form = CommentForm(request.POST or None)
-    if form.is_valid():
-        comment = form.save(commit=False)
-        comment.author = request.user
-        comment.post = post
-        comment.save()
-        return redirect('post_app:post_detail', post_id=post_id, form=form)
-    form = CommentForm()
-    context = {"form": form, 'post': post}
-    return render(request, 'post/post_detail.html', context)
+    comments = post.comments.all()
+    if request.method == 'POST':
+        # A comment was posted
+        comment_form = CommentForm(data=request.POST)
+        if comment_form.is_valid():
+            # Create Comment object but don't save to database yet
+            new_comment = comment_form.save(commit=False)
+            # Assign the current post to the comment
+            new_comment.post = post
+            # Save the comment to the database
+            new_comment.save()
+        else:
+            comment_form = CommentForm()
+        return render(request,
+                      'post/post_detail.html',
+                      {'post': post,
+                       'comments': comments,
+                       'comment_form': comment_form})

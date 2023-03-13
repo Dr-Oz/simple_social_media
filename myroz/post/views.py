@@ -76,10 +76,12 @@ def profile(request, username):
 def post_detail(request, post_id):
     post = Post.objects.get(pk=post_id)
     user = post.author
+    comment_form = CommentForm()
     post_user = Post.objects.filter(author=user).order_by('-pub_date')
     context = {
         'post': post,
-        'post_user': post_user
+        'post_user': post_user,
+        'comment_form': comment_form
     }
     return render(request, 'post/post_detail.html', context)
 

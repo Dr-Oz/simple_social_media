@@ -92,7 +92,9 @@ def post_create(request):
         id = request.user.id
         author_id = User.objects.get(id=id)
         username = request.user.username
-        form = PostForm(request.POST)
+        form = PostForm(
+            request.POST or None,
+            files=request.FILES or None,)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = author_id

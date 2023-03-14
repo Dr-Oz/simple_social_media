@@ -35,8 +35,6 @@ class Post(models.Model):
         upload_to='post/',
         blank=True
     )
-    comments = models.ManyToManyField(
-        'Comment', related_name='comments', blank=True)
 
     class Meta:
         ordering = ('-pub_date',)
@@ -57,11 +55,11 @@ class Group(models.Model):
         return self.name
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post, verbose_name='Пост', on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     author = models.ForeignKey(
             User,
-            on_delete=models.CASCADE,
-            verbose_name='Автор'
+            verbose_name='Автор',
+            on_delete=models.CASCADE
         )
     body = models.TextField(
             'Текст комментария',
@@ -72,7 +70,12 @@ class Comment(models.Model):
             'Дата публикации',
             auto_now_add=True
         )
+    updated = models.DateTimeField(auto_now=True)
+    active = models.BooleanField(default=True)
 
+
+    class Meta:
+        ordering = ('created',)
     def __str__(self):
             return self.body
 

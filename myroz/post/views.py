@@ -128,14 +128,18 @@ def post_edit(request, post_id):
 def add_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     comments = post.comments.all()
+    id = request.user.id
+    author_id = User.objects.get(id=id)
     if request.method == 'POST':
         # A comment was posted
         comment_form = CommentForm(data=request.POST)
         if comment_form.is_valid():
+
             # Create Comment object but don't save to database yet
             new_comment = comment_form.save(commit=False)
             # Assign the current post to the comment
             new_comment.post = post
+            new_comment.author = author_id
             # Save the comment to the database
             new_comment.save()
         else:

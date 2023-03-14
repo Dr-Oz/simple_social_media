@@ -15,7 +15,12 @@ class PostAdmin(admin.ModelAdmin):
     # Это свойство сработает для всех колонок: где пусто — там будет эта строка
     empty_value_display = '-пусто-'
 
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('author', 'post', 'created', 'active')
+    list_filter = ('active', 'created', 'updated')
+    search_fields = ('author', 'body')
 
+admin.site.register(Comment, CommentAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Group)
 

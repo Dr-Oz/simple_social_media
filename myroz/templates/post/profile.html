@@ -4,6 +4,18 @@
 {% block content %}
         <h1>Все посты пользователя {{ username }}</h1>
         <h3>Всего постов: {{ post_user.count }} </h3>
+         {% if following %}
+    <a class="btn btn-lg btn-light"
+      href="{% url 'post_app:profile_unfollow' username %}" role="button">
+      Отписаться
+    </a>
+  {% else %}
+      <a class="btn btn-lg btn-primary"
+        href="{% url 'post_app:profile_follow' username %}" role="button">
+        Подписаться
+      </a>
+   {% endif %}
+</div>
         <div class="container py-5">
         <article>
             <ul>

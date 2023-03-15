@@ -8,7 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import render, redirect
 from .forms import PostForm, CommentForm
-from .models import Post, Group, User
+from .models import Post, Group, User, Follow
 from django.urls import reverse
 
 
@@ -63,12 +63,18 @@ def profile(request, username):
     paginator = Paginator(post_user, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(
+            user=request.user, author=user
+        ).exists()
+    else:
+        following = False
     context = {
         'username': username,
         'page_obj': page_obj,
         'post_user': post_user,
         'post_one': post_one,
+        'following': following,
     }
     return render(request, 'post/profile.html', context)
 
@@ -149,3 +155,31 @@ def add_comment(request, post_id):
                       {'post': post,
                        'comments': comments,
                        'comment_form': comment_form})
+
+@login_required
+def follow_index(request):
+    list_of_posts = Post.objects.filter(author__following__user=request.user)
+    paginator = Paginator(list_of_posts, 20)
+    page_namber = request.GET.get('page')
+    page = paginator.get_page(page_namber)
+    context = {'page': page}
+    return render(request, 'post/follow.html', context)
+
+
+@login_required
+def profile_follow(request, username):
+    user = request.user
+    author = User.objects.get(username=username)
+    is_follower = Follow.objects.filter(user=user, author=author)
+    if user != author and not is_follower.exists():
+        Follow.objects.create(user=user, author=author)
+    return redirect(reverse('post_app:profile', args=[username]))
+
+
+@login_required
+def profile_unfollow(request, username):
+    author = get_object_or_404(User, username=username)
+    is_follower = Follow.objects.filter(user=request.user, author=author)
+    if is_follower.exists():
+        is_follower.delete()
+    return redirect('post_app:profile', username=author)

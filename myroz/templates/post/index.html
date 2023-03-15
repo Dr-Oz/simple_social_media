@@ -4,6 +4,7 @@
 {% cache 20 index_page %}
 {% block title %}Последние обновления на сайте{% endblock %}
 {% block content %}
+    {% include 'post/includes/switcher.html' %}
       <div class="container py-5">
         <article>
          {% for post in page_obj %}

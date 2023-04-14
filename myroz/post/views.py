@@ -1,15 +1,21 @@
-import datetime
-
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 # Create your views here.
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
+from rest_framework import status, generics, viewsets, permissions
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .forms import PostForm, CommentForm
 from .models import Post, Group, User, Follow
 from django.urls import reverse
+
+from .serializers import PostSerializer, GroupSerializer, UserSerializer
+from .permissions import AuthorOrReadOnly, ReadOnly
+from ..api.throttling import WorkingHoursRateThrottle
 
 
 # Create your views here.
@@ -183,3 +189,102 @@ def profile_unfollow(request, username):
     if is_follower.exists():
         is_follower.delete()
     return redirect('post_app:profile', username=author)
+
+@api_view(['GET', 'POST'])
+def api_post(request):
+    if request.method == 'GET':
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    posts = Post.objects.all()
+    serializer = PostSerializer(posts, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+def api_posts_detail(request, pk):
+    post = Post.objects.get(id=pk)
+    if request.method == 'PUT' or request.method == 'PATCH':
+        serializer = PostSerializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    serializer = PostSerializer(post)
+    return Response(serializer.data)
+
+# class APIPost(APIView):
+#     def get(self, request):
+#         posts = Post.objects.all()
+#         serializer = PostSerializer(posts, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#     def post(self, request):
+#         serializer = PostSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class APIPostDetail(APIView):
+#     def get(self, request, pk):
+#         post = Post.objects.get(pk=pk)
+#         serializer = PostSerializer(post)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#     def delete(self, request, pk):
+#         post = Post.objects.get(pk=pk)
+#         post.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+#
+#     def put(self, request, pk):
+#         post = Post.objects.get(pk=pk)
+#         serializer = PostSerializer(post, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def patch(self, request, pk):
+#         post = Post.objects.get(pk=pk)
+#         serializer = PostSerializer(post, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class APIPostList(generics.ListCreateAPIView):
+#     queryset = Post.objects.all()
+#     serializer_class = PostSerializer
+#
+#
+# class APIPostDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Post.objects.all()
+#     serializer_class = PostSerializer
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = (AuthorOrReadOnly,)
+    throttle_classes = (WorkingHoursRateThrottle, )
+    def get_permissions(self):
+        # Если в GET-запросе требуется получить информацию об объекте
+        if self.action == 'retrieve':
+            # Вернем обновленный перечень используемых пермишенов
+            return (ReadOnly(),)
+        # Для остальных ситуаций оставим текущий перечень пермишенов без изменений
+        return super().get_permissions()
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

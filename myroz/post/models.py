@@ -7,6 +7,11 @@ from core.models import CreatedModel
 
 User = get_user_model()
 
+class Tag(models.Model):
+    name = models.CharField(max_length=32)
+
+    def __str__(self):
+        return self.name
 
 class Post(models.Model):
     text = models.TextField(
@@ -28,13 +33,15 @@ class Post(models.Model):
         blank=True,
         null=True,
         verbose_name='Группа',
-        help_text='Выберите группу'
+        help_text='Выберите группу',
+        related_name='post'
     )
     image = models.ImageField(
         'Картинка',
         upload_to='post/',
         blank=True
     )
+    tag = models.ManyToManyField(Tag, through='TagPost')
 
     class Meta:
         ordering = ('-pub_date',)
@@ -85,3 +92,10 @@ class Follow(models.Model):
                              related_name="follower")
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name="following")
+
+class TagPost(models.Model):
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.tag} {self.post}'

@@ -1,9 +1,18 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path
+from django.urls import path, include
 
 from . views import *
 app_name = 'post_app'
+
+
+from rest_framework.routers import SimpleRouter
+
+router = SimpleRouter()
+router.register('posts', PostViewSet)
+router.register('groups', GroupViewSet)
+router.register(r'users', UserViewSet)
+
 
 urlpatterns = [
     path('', index, name='home'),
@@ -17,6 +26,12 @@ urlpatterns = [
     path("follow/", follow_index, name="follow_index"),
     path("<str:username>/follow/", profile_follow, name="profile_follow"),
     path("<str:username>/unfollow/", profile_unfollow, name="profile_unfollow"),
+    path('api/v1/', include(router.urls)),
+    # path('api/v1/posts/', api_post),
+    # path('api/v1/posts/<int:pk>/', api_posts_detail),
+    #path('api/v1/posts/<int:pk>/', APIPostDetail.as_view()),
+    #path('api/v1/posts/', APIPost.as_view())
+    #path('api/v1/posts/', APIPostList.as_view()),
 ]
 
 handler404 = 'core.views.page_not_found'

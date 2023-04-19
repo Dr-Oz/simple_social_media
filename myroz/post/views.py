@@ -4,19 +4,19 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
-from rest_framework import status, generics, viewsets, permissions
+from rest_framework import status, viewsets, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from .forms import PostForm, CommentForm
 from .models import Post, Group, User, Follow
 from django.urls import reverse
 
+from .pagination import CatsPagination
 from .serializers import PostSerializer, GroupSerializer, UserSerializer
 from .permissions import AuthorOrReadOnly, ReadOnly
-from ..api.throttling import WorkingHoursRateThrottle
-
+from .throttling import WorkingHoursRateThrottle
+from django_filters.rest_framework import DjangoFilterBackend
 
 # Create your views here.
 def index(request):
@@ -273,6 +273,13 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = (AuthorOrReadOnly,)
     throttle_classes = (WorkingHoursRateThrottle, )
+    #pagination_class = CatsPagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    pagination_class = None
+    filtered_fields = ('author', 'group')
+    search_fields = ('$text',)
+    ordering_fields = ('author', 'group')
+    ordering = ('group',)
     def get_permissions(self):
         # Если в GET-запросе требуется получить информацию об объекте
         if self.action == 'retrieve':
@@ -280,6 +287,12 @@ class PostViewSet(viewsets.ModelViewSet):
             return (ReadOnly(),)
         # Для остальных ситуаций оставим текущий перечень пермишенов без изменений
         return super().get_permissions()
+    def get_queryset(self):
+        queryset = Post.objects.all()
+        group = self.request.query_params.get('group')
+        if group is not None:
+            queryset = queryset.filter(group=group)
+        return queryset
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
